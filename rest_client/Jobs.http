@@ -1,0 +1,16 @@
+@JOB_MANAGER_PORT = 12356
+
+### Get all JOBS
+GET http://localhost:{{JOB_MANAGER_PORT}}/api/v1/jobs HTTP/1.1
+Accept: application/json
+
+### Create new JOB
+POST http://localhost:{{JOB_MANAGER_PORT}}/api/v1/jobs HTTP/1.1
+Accept: application/json
+Content-Type: application/json
+
+{
+    "Command": "ls",
+    "Args": ["-l", "-r", "-t", "-h"],
+    "CronExpr": "* * * * *"
+}
