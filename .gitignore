@@ -1,2 +1,3 @@
 *.log
 jobManager
+.DS_Store
