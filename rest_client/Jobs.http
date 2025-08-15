@@ -1,11 +1,17 @@
 @JOB_MANAGER_PORT = 12356
 
 ### Get all JOBS
-GET http://localhost:{{JOB_MANAGER_PORT}}/api/v1/jobs HTTP/1.1
+GET http://localhost:{{JOB_MANAGER_PORT}}/api/v1/job HTTP/1.1
 Accept: application/json
+### Get all JOBS
+
+### Get Job by ID
+GET http://localhost:{{JOB_MANAGER_PORT}}/api/v1/job/c9f2e0c0-616d-492f-a991-d8ea2b8ce88e HTTP/1.1
+Accept: application/json
+### Get Job by ID
 
 ### Create new JOB
-POST http://localhost:{{JOB_MANAGER_PORT}}/api/v1/jobs HTTP/1.1
+POST http://localhost:{{JOB_MANAGER_PORT}}/api/v1/job HTTP/1.1
 Accept: application/json
 Content-Type: application/json
 
@@ -14,3 +20,16 @@ Content-Type: application/json
     "Args": ["-l", "-r", "-t", "-h"],
     "CronExpr": "* * * * *"
 }
+### Create new JOB
+
+### Update JOB
+PATCH http://localhost:{{JOB_MANAGER_PORT}}/api/v1/job/c9f2e0c0-616d-492f-a991-d8ea2b8ce88e HTTP/1.1
+Accept: application/json
+Content-Type: application/json
+
+{
+    "Command": "ls",
+    "Args": ["-l", "-r", "-h", "-t"],
+    "CronExpr": "* * * * *"
+}
+### Update JOB

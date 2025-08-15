@@ -37,7 +37,10 @@ func StartServer(ctx *context.AppContext, server *http.Server) (err error) {
 
 func registerRoutes(ctx *context.AppContext) (router *httprouter.Router) {
 	router = httprouter.New()
-	router.GET(API_PREFIX+"/jobs", job.GetAllJobs(ctx))
-	router.POST(API_PREFIX+"/jobs", job.CreateJob(ctx))
+	router.GET(API_PREFIX+"/job", job.GetAllJobs(ctx))
+	router.GET(API_PREFIX+"/job/:id", job.GetJobById(ctx))
+	router.POST(API_PREFIX+"/job", job.CreateJob(ctx))
+	router.PATCH(API_PREFIX+"/job/:id", job.UpdateJob(ctx))
+	router.DELETE(API_PREFIX+"/job/:id", job.DeleteJob(ctx))
 	return
 }

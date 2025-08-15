@@ -90,6 +90,18 @@ func (manager *JobManager) AddJob(j Job) (jobId JobId) {
 	return
 }
 
+func (manager *JobManager) RemoveJob(jobId string) {
+	manager.Logger.Infof("Adding the job to the job manager.")
+	manager.jobLock.Lock()
+	defer manager.jobLock.Unlock()
+	if !manager.running {
+		manager.Logger.Infof("Job manager is not running, simply removing the job from the entry list.")
+		manager.removeEntry(JobId(jobId))
+	} else {
+		manager.removeChan <- JobId(jobId)
+	}
+}
+
 func (manager *JobManager) runScheduler() {
 	manager.Logger.Infof("Running the scheduler.")
 	now := time.Now()
