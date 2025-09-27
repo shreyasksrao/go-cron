@@ -39,8 +39,8 @@ func main() {
 	defer logger.CleanUpLoggers()
 	// Print the CLI args
 	appLogger.Infof("---------- Command line flags ----------")
-	appLogger.Infof("Config file path : %s", configFilePath)
-	appLogger.Infof("REST server port : %d", restServerPort)
+	appLogger.Infof("Config file path : %s", *configFilePath)
+	appLogger.Infof("REST server port : %d", *restServerPort)
 	appLogger.Infof("----------------------------------------")
 
 	// Channel to listen for interrupt or terminate signal
@@ -94,7 +94,7 @@ func main() {
 	case <-stop:
 		appLogger.Infof("Shutting down the server as SIGTERM signal recieved...")
 	case err := <-serverErr:
-		appLogger.Errorf("Shutting down the server due to the error - %v", err.Error())
+		appLogger.Errorf("Shutting down the application due to REST server error - %v", err.Error())
 	}
 
 	// Context with timeout for graceful shutdown

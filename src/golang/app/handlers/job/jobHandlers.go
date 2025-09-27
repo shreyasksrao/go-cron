@@ -217,6 +217,7 @@ func DeleteJob(ctx *context.AppContext) httprouter.Handle {
 			common.WriteErrorResponse(w, errMsg, "Bad Request", http.StatusBadRequest)
 			return
 		}
+		ctx.JobManager.RemoveJob(jobId)
 		delete(commandJobs, jobId)
 		err = saveJobs(logger, jobFilePath, commandJobs)
 		if err != nil {

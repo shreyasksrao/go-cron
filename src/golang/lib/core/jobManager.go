@@ -150,6 +150,7 @@ func (manager *JobManager) runScheduler() {
 					jobRun := manager.jobRunner.CreateJobRun(job)
 					manager.jobRunChan <- jobRun
 					job.GetCommonJobFields().NextRun, _ = job.GetNextScheduleTime(now)
+					job.Save()
 				}
 
 			case newEntry := <-manager.addChan:

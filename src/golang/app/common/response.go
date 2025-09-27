@@ -20,7 +20,7 @@ func WriteOkResponse(w http.ResponseWriter, data interface{}) {
 	}
 	w.WriteHeader(http.StatusOK)
 	encoder := json.NewEncoder(w)
-	encoder.SetIndent("", "\t")
+	encoder.SetIndent("", "    ")
 	if err := encoder.Encode(response); err != nil {
 		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 	}
@@ -34,7 +34,7 @@ func WriteErrorResponse(w http.ResponseWriter, errMsg string, status string, sta
 	}
 	w.WriteHeader(statusCode)
 	encoder := json.NewEncoder(w)
-	encoder.SetIndent("", "\t")
+	encoder.SetIndent("", "    ")
 	if err := encoder.Encode(response); err != nil {
 		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 	}

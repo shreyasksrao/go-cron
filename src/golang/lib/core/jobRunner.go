@@ -88,11 +88,11 @@ func (jr *JobRunner) Stop() (err error) {
 	defer jr.Logger.Infof("Stopped the Job runner.")
 	jr.stopChan <- struct{}{}
 	for _, jobRun := range jr.RunningJobs {
-		jr.Logger.Infof("[Stop] STOPPING the running job - %v, job run ID - %v",
-			jobRun.Job.GetCommonJobFields().ID, jobRun.ID)
+		jr.Logger.Infof("[%v] STOPPING the running job - %v.", jobRun.ID,
+			jobRun.Job.GetCommonJobFields().ID)
 		jobRun.Job.Stop()
-		jr.Logger.Infof("[Stop] STOPPED the job - %v, job run ID - %v",
-			jobRun.Job.GetCommonJobFields().ID, jobRun.ID)
+		jr.Logger.Infof("[%v] STOPPED the job - %v.", jobRun.ID,
+			jobRun.Job.GetCommonJobFields().ID)
 	}
 	if len(jr.RunningJobs) > 0 {
 		jr.Logger.Errorf("Few jobs are running even after Stop() method invoke.")
@@ -103,8 +103,8 @@ func (jr *JobRunner) Stop() (err error) {
 }
 
 func (jr *JobRunner) runJob(jobRun *JobRun) {
-	jr.Logger.Infof("In a go-routine, running the job - %v. Job run ID - %v.",
-		jobRun.Job.GetCommonJobFields().ID, jobRun.ID)
+	jr.Logger.Infof("[%v] In a go-routine, running the job - %v.", jobRun.ID,
+		jobRun.Job.GetCommonJobFields().ID)
 	go func() {
 		jr.RunningJobCountMu.Lock()
 		jr.RunningJobCount++
@@ -113,46 +113,48 @@ func (jr *JobRunner) runJob(jobRun *JobRun) {
 		jr.RunningJobsMu.Lock()
 		jr.RunningJobs = append(jr.RunningJobs, jobRun)
 		jr.RunningJobsMu.Unlock()
-		jr.Logger.Infof("[runJob] Execution of the Job - %v, JobRun - %v STARTED.",
-			jobRun.Job.GetCommonJobFields().ID, jobRun.ID)
+		jr.Logger.Infof("[%v] Execution of the Job - %v STARTED.", jobRun.ID,
+			jobRun.Job.GetCommonJobFields().ID)
+		jobRun.RanAt = time.Now()
 		jobRun.Job.Execute()
-		jr.Logger.Infof("[runJob] Execution of the Job - %v, JobRun - %v COMPLETED.",
-			jobRun.Job.GetCommonJobFields().ID, jobRun.ID)
+		jr.Logger.Infof("[%v] Execution of the Job - %v COMPLETED.", jobRun.ID,
+			jobRun.Job.GetCommonJobFields().ID)
 		jr.RunningJobCountMu.Lock()
 		jr.RunningJobCount--
 		jr.RunningJobCountMu.Unlock()
 		jr.removeRunEntry(jobRun.ID)
+		jobRun.Job.Save()
 	}()
 }
 
 func (jr *JobRunner) removeRunEntry(runId string) {
 	for i, j := range jr.RunningJobs {
 		if j.ID == runId {
-			jr.Logger.Infof("[removeRunEntry] Removing the JobRun entry for the run ID - %v", runId)
+			jr.Logger.Infof("[%v] Removing the JobRun.", runId)
 			// Locking here works only when there is only ONE go-routine removes entry.
 			jr.RunningJobsMu.Lock()
 			defer jr.RunningJobsMu.Unlock()
 			jr.RunningJobs = append(jr.RunningJobs[:i], jr.RunningJobs[i+1:]...)
-			jr.Logger.Infof("[removeRunEntry] Successfully removed the job with ID - %v", runId)
+			jr.Logger.Infof("[%v] Successfully removed the JobRun.", runId)
 			return
 		}
 	}
 	// If we don't find the desired job, but somebody is calling remove entry...
-	jr.Logger.Infof("[removeRunEntry] Failed to get the job run with ID - %v", runId)
+	jr.Logger.Infof("Failed to get the job run with ID - %v", runId)
 	jr.syncRunningCount()
 }
 
 func (jr *JobRunner) syncRunningCount() {
-	jr.Logger.Infof("[syncRunningCount] Syncing the job runner's RunningJobCount.")
+	jr.Logger.Infof("Syncing the job runner's RunningJobCount.")
 	runningJobsSize := len(jr.RunningJobs)
 	if runningJobsSize != int(jr.RunningJobCount) {
-		jr.Logger.Warnf("[syncRunningCount] Syncing RunningJobCount. Actual running jobs - %v, RunningJobCount - %v", runningJobsSize, jr.RunningJobCount)
+		jr.Logger.Warnf("Syncing RunningJobCount. Actual running jobs - %v, RunningJobCount - %v", runningJobsSize, jr.RunningJobCount)
 		jr.RunningJobCountMu.Lock()
 		jr.RunningJobCount = int16(runningJobsSize)
 		jr.RunningJobCountMu.Unlock()
 		return
 	}
-	jr.Logger.Infof("[syncRunningCount] Running count is in sync with number of running jobs.")
+	jr.Logger.Infof("Running count is in sync with number of running jobs.")
 }
 
 func (jr *JobRunner) monitorJobRunner() {
@@ -177,6 +179,6 @@ func (jr *JobRunner) monitor() {
 	jr.Logger.Infof("Number of running jobs - %v", jr.RunningJobCount)
 	for i, j := range jr.RunningJobs {
 		jr.Logger.Infof("| #%v : Jobrun ID - %v :: Job ID - %v :: Scheduled at - %v :: Ran at - %v |",
-			i, j.ID, j.Job.GetCommonJobFields().ID, j.ScheduledAt, j.RanAt)
+			i+1, j.ID, j.Job.GetCommonJobFields().ID, j.ScheduledAt, j.RanAt)
 	}
 }

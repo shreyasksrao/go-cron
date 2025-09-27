@@ -35,16 +35,17 @@ func (job *CommandJob) GetCommonJobFields() (commonJobFields *core.CommonJobFiel
 func (job *CommandJob) Save() (saved bool, err error) {
 	var errMsg string
 	var jobsMap map[string]CommandJob
-	job.Logger.Infof("Saving the job with ID - %v to the resource file.", job.CommonJobFields.ID)
+	jobId := string(job.CommonJobFields.ID)
+	job.Logger.Infof("[%v] Saving the job to the resource file '%v'.", jobId, job.SaveFile)
 	exists := utils.CheckFileExistance(job.Logger, job.SaveFile)
 	if exists {
-		job.Logger.Infof("Jobs resource file exists. Loading the existing jobs.")
+		job.Logger.Debugf("[%v] Jobs resource file exists. Loading the existing jobs.", jobId)
 		var fileData []byte
 		// Open the file in append mode, create it if it doesn't exist, with write-only permissions
 		fileData, err = os.ReadFile(job.SaveFile)
 		if err != nil {
 			errMsg = "Failed to save the job - " + string(job.CommonJobFields.ID) + "to the file. Error reading file - " + job.SaveFile + ". Error - " + err.Error()
-			job.Logger.Errorf(errMsg)
+			job.Logger.Errorf("[%v] %v", jobId, errMsg)
 			err = fmt.Errorf(errMsg)
 			return false, err
 		}
@@ -52,12 +53,12 @@ func (job *CommandJob) Save() (saved bool, err error) {
 		err = json.Unmarshal(fileData, &jobsMap)
 		if err != nil {
 			errMsg = "Failed to save the job - " + string(job.CommonJobFields.ID) + " to the file. Error unmarshaling file - " + job.SaveFile + ". Error - " + err.Error()
-			job.Logger.Errorf(errMsg)
+			job.Logger.Errorf("[%v] %v", jobId, errMsg)
 			err = fmt.Errorf(errMsg)
 			return false, err
 		}
 	} else {
-		job.Logger.Infof("Jobs resources file doesn't exist. Creating an empty jobMap.")
+		job.Logger.Infof("[%v] Jobs resources file doesn't exist. Creating an empty jobMap.", jobId)
 		jobsMap = make(map[string]CommandJob)
 	}
 
@@ -78,7 +79,7 @@ func (job *CommandJob) Save() (saved bool, err error) {
 	jsonData, err := json.MarshalIndent(jobsMap, "", "  ")
 	if err != nil {
 		errMsg = "Error marshaling the JSON. Error : " + err.Error()
-		job.Logger.Errorf(errMsg)
+		job.Logger.Errorf("[%v] %v", jobId, errMsg)
 		err = fmt.Errorf(errMsg)
 		return false, err
 	}
@@ -86,12 +87,12 @@ func (job *CommandJob) Save() (saved bool, err error) {
 	err = os.WriteFile(job.SaveFile, jsonData, 0644)
 	if err != nil {
 		errMsg = "Error writing to file. Error : " + err.Error()
-		job.Logger.Errorf(errMsg)
+		job.Logger.Errorf("[%v] %v", jobId, errMsg)
 		err = fmt.Errorf(errMsg)
 		return false, err
 	}
 	job.Logger.Debugf("After update Job - %v", jobsMap[string(job.CommonJobFields.ID)])
-	job.Logger.Infof("Successfully saved the Job with ID - %v to the resource file.", string(job.CommonJobFields.ID))
+	job.Logger.Infof("[%v] Successfully saved the Job to the resource file '%v'.", jobId, job.SaveFile)
 	return true, nil
 }
 

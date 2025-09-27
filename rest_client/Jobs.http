@@ -16,9 +16,9 @@ Accept: application/json
 Content-Type: application/json
 
 {
-    "Command": "ls",
-    "Args": ["-l", "-r", "-t", "-h"],
-    "CronExpr": "* * * * *"
+    "Command": "sleep",
+    "Args": ["140"],
+    "CronExpr": "24 22 1 9 *"
 }
 ### Create new JOB
 
@@ -33,3 +33,9 @@ Content-Type: application/json
     "CronExpr": "* * * * *"
 }
 ### Update JOB
+
+### Delete JOB
+DELETE http://localhost:{{JOB_MANAGER_PORT}}/api/v1/job/c9f2e0c0-616d-492f-a991-d8ea2b8ce88e HTTP/1.1
+Accept: application/json
+
+### Delete JOB
